@@ -16,7 +16,17 @@ use signal_frame::signal_channel;
 pub use signal_system::SystemDaemonConfiguration;
 
 #[derive(
-    Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord,
+    Archive,
+    RkyvSerialize,
+    RkyvDeserialize,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
 )]
 pub struct ConfigurationGeneration(u64);
 
@@ -113,7 +123,14 @@ signal_channel! {
     }
 }
 
-impl From<SystemDaemonConfiguration> for Operation {
+pub type MetaSystemRequest = Operation;
+pub type MetaSystemFrame = Frame;
+pub type MetaSystemFrameBody = FrameBody;
+pub type MetaSystemRequestBuilder = RequestBuilder;
+pub type ChannelRequest = Operation;
+pub type ChannelReply = MetaSystemReply;
+
+impl From<SystemDaemonConfiguration> for MetaSystemRequest {
     fn from(payload: SystemDaemonConfiguration) -> Self {
         Self::Configure(payload)
     }
