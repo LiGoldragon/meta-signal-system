@@ -104,9 +104,8 @@ pub enum UnimplementedReason {
     ComponentPaused,
 }
 
-#[derive(
-    Archive, RkyvSerialize, RkyvDeserialize, NotaEncode, NotaDecode, Debug, Clone, PartialEq, Eq,
-)]
+#[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "nota-text", derive(NotaEncode, NotaDecode))]
 pub struct RequestUnimplemented {
     pub operation: OperationKind,
     pub reason: UnimplementedReason,
