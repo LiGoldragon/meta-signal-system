@@ -42,7 +42,7 @@ impl MetaSystemFixture {
 
     fn round_trip_request(&self, request: Operation) -> Operation {
         let frame = MetaSystemFrame::new(MetaSystemFrameBody::Request {
-            exchange: self.exchange.clone(),
+            exchange: self.exchange,
             request: request.clone().into_request(),
         });
         let bytes = frame.encode_length_prefixed().expect("encode request");
@@ -55,7 +55,7 @@ impl MetaSystemFixture {
 
     fn round_trip_reply(&self, reply: MetaSystemReply) -> MetaSystemReply {
         let frame = MetaSystemFrame::new(MetaSystemFrameBody::Reply {
-            exchange: self.exchange.clone(),
+            exchange: self.exchange,
             reply: Reply::committed(NonEmpty::single(SubReply::Ok(reply.clone()))),
         });
         let bytes = frame.encode_length_prefixed().expect("encode reply");
