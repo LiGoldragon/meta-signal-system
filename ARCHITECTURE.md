@@ -9,6 +9,21 @@
 observations, status queries, and subscription events stay in
 `signal-system`.
 
+## Direction
+
+This repo is the second leg of the system contract pair. Every Persona
+component has exactly two contracts: the ordinary `signal-<component>` and the
+meta `meta-signal-<component>`. `meta-signal-system` is the authority surface
+that configures the `system-daemon`, including backend selection and the
+privileged-action surface that `system` keeps separate from read-only
+observation; before it, `system` had only its ordinary contract.
+
+`system` is paused until a real focus consumer lands, so the meta surface can
+answer `RequestUnimplemented` with a `ComponentPaused` reason. Privileged OS
+actions that are authority-gated — force-focus and focus-drift suppression —
+are additional operations that extend this channel when the focus path
+activates; daemon configuration is the foundation they build on.
+
 The current channel has one operation:
 
 ```text
@@ -20,7 +35,8 @@ MetaSystemRequest                         MetaSystemReply
 
 `SystemDaemonConfiguration` is imported from `signal-system`. The startup
 binary file and the meta reconfiguration operation use the same typed record;
-configuration never arrives as flags.
+configuration never arrives as flags. `RequestUnimplemented` carries a
+`ComponentPaused` reason while `system` is paused.
 
 ## Boundaries
 
