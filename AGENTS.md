@@ -15,4 +15,10 @@ stays in `system`.
   second local mirror of `SystemDaemonConfiguration`.
 - Keep meta operations authority-shaped and closed. Add new operations only
   when the `system` component has a concrete policy boundary for them.
-- Keep NOTA text behind the crate's `nota-text` feature for CLI/tooling edges.
+- Keep DOTOS text behind the crate's `dotos-text` feature for CLI/tooling edges.
+
+## Protos estate status
+
+Stack: correct-new destination
+Status: active component contract, current checkout legacy-wired
+This checkout is not proof of correct-new adoption.
