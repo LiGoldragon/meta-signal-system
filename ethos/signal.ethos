@@ -1,0 +1,5 @@
+Signal
+[ signal_persona:[ OwnerIdentity ] ]
+[ Configure.SystemDaemonConfiguration ]
+[ Configured.Configured ConfigurationRejected.ConfigurationRejected RequestUnimplemented.RequestUnimplemented ]
+[ WirePath.String SocketMode.Integer SystemSocketPath.WirePath SystemSocketMode.SocketMode SupervisionSocketPath.WirePath SupervisionSocketMode.SocketMode SystemBackend.[ Niri ] SystemDaemonConfiguration.{ SystemSocketPath SystemSocketMode SupervisionSocketPath SupervisionSocketMode SystemBackend OwnerIdentity } ConfigurationGeneration.Integer Configured.{ ConfigurationGeneration } ConfigurationRejectionReason.[ ManagerAuthorityRequired MalformedConfiguration UnsupportedBackend ] ConfigurationRejected.{ ConfigurationRejectionReason } MetaSystemOperationKind.[ Configure ] UnimplementedReason.[ NotBuiltYet DependencyNotReady ComponentPaused ] RequestUnimplemented.{ MetaSystemOperationKind UnimplementedReason } ]

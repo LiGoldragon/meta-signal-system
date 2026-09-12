@@ -1,0 +1,6 @@
+; Canonical Datom examples for meta-signal-system.
+
+Configure.{ /run/persona/system.sock 384 /run/persona/system-supervision.sock 384 Niri UnixUser.1000 }
+Configured.{ 7 }
+ConfigurationRejected.{ ManagerAuthorityRequired }
+RequestUnimplemented.{ Configure ComponentPaused }

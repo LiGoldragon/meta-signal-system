@@ -10,127 +10,75 @@
 //! startup message, and later reconfiguration arrives over this meta plane as
 //! the same typed record, never as flags.
 
-use nota::{Block, NotaBlock, NotaDecode, NotaDecodeError, NotaEncode};
-use rkyv::{Archive, Deserialize as RkyvDeserialize, Serialize as RkyvSerialize};
-use signal_frame::signal_channel;
-pub use signal_system::SystemDaemonConfiguration;
+pub mod generated;
+pub use generated::signal::*;
 
-#[derive(
-    Archive,
-    RkyvSerialize,
-    RkyvDeserialize,
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Hash,
-    PartialOrd,
-    Ord,
-)]
-pub struct ConfigurationGeneration(u64);
+use std::marker::PhantomData;
 
-impl ConfigurationGeneration {
-    pub const fn new(value: u64) -> Self {
-        Self(value)
-    }
+pub const ETHOS: &str = include_str!("../ethos/signal.ethos");
 
-    pub const fn value(self) -> u64 {
-        self.0
-    }
+/// A portable rkyv Signal frame whose target contract is carried in its type.
+pub struct Signal<T> {
+    bytes: Vec<u8>,
+    target: PhantomData<fn() -> T>,
 }
 
-impl NotaDecode for ConfigurationGeneration {
-    fn from_nota_block(block: &Block) -> Result<Self, NotaDecodeError> {
-        Ok(Self(NotaBlock::new(block).parse_integer()?))
-    }
+/// Data that can form a portable Signal frame.
+pub trait Signalizable: Sized {
+    fn signalize(&self) -> Result<Signal<Self>, rkyv::rancor::Error>;
 }
 
-impl NotaEncode for ConfigurationGeneration {
-    fn to_nota(&self) -> String {
-        self.0.to_string()
+/// A frame exposes its peer-wire bytes for transport framing.
+pub trait ByteViewable {
+    fn bytes(&self) -> &[u8];
+}
+
+/// A typed portable Signal can restore the contract value it carries.
+pub trait Restorable<T> {
+    fn restore(&self) -> Result<T, rkyv::rancor::Error>;
+}
+
+impl Signalizable for Query {
+    fn signalize(&self) -> Result<Signal<Self>, rkyv::rancor::Error> {
+        Ok(Signal {
+            bytes: rkyv::to_bytes::<rkyv::rancor::Error>(self)?.to_vec(),
+            target: PhantomData,
+        })
     }
 }
 
-#[derive(
-    Archive, RkyvSerialize, RkyvDeserialize, NotaEncode, NotaDecode, Debug, Clone, PartialEq, Eq,
-)]
-pub struct Configured {
-    pub generation: ConfigurationGeneration,
-}
-
-#[derive(
-    Archive,
-    RkyvSerialize,
-    RkyvDeserialize,
-    NotaEncode,
-    NotaDecode,
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Hash,
-)]
-pub enum ConfigurationRejectionReason {
-    ManagerAuthorityRequired,
-    MalformedConfiguration,
-    UnsupportedBackend,
-}
-
-#[derive(
-    Archive, RkyvSerialize, RkyvDeserialize, NotaEncode, NotaDecode, Debug, Clone, PartialEq, Eq,
-)]
-pub struct ConfigurationRejected {
-    pub reason: ConfigurationRejectionReason,
-}
-
-#[derive(
-    Archive,
-    RkyvSerialize,
-    RkyvDeserialize,
-    NotaEncode,
-    NotaDecode,
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Hash,
-)]
-pub enum UnimplementedReason {
-    NotBuiltYet,
-    DependencyNotReady,
-    ComponentPaused,
-}
-
-#[derive(Archive, RkyvSerialize, RkyvDeserialize, Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "nota-text", derive(NotaEncode, NotaDecode))]
-pub struct RequestUnimplemented {
-    pub operation: OperationKind,
-    pub reason: UnimplementedReason,
-}
-
-signal_channel! {
-    channel MetaSystem {
-        operation Configure(SystemDaemonConfiguration),
-    }
-    reply MetaSystemReply {
-        Configured(Configured),
-        ConfigurationRejected(ConfigurationRejected),
-        RequestUnimplemented(RequestUnimplemented),
+impl Signalizable for Response {
+    fn signalize(&self) -> Result<Signal<Self>, rkyv::rancor::Error> {
+        Ok(Signal {
+            bytes: rkyv::to_bytes::<rkyv::rancor::Error>(self)?.to_vec(),
+            target: PhantomData,
+        })
     }
 }
 
-pub type MetaSystemRequest = Operation;
-pub type MetaSystemFrame = Frame;
-pub type MetaSystemFrameBody = FrameBody;
-pub type MetaSystemRequestBuilder = RequestBuilder;
-pub type ChannelRequest = Operation;
-pub type ChannelReply = MetaSystemReply;
+impl<T> From<Vec<u8>> for Signal<T> {
+    fn from(bytes: Vec<u8>) -> Self {
+        Self {
+            bytes,
+            target: PhantomData,
+        }
+    }
+}
 
-impl From<SystemDaemonConfiguration> for MetaSystemRequest {
-    fn from(payload: SystemDaemonConfiguration) -> Self {
-        Self::Configure(payload)
+impl<T> ByteViewable for Signal<T> {
+    fn bytes(&self) -> &[u8] {
+        &self.bytes
+    }
+}
+
+impl Restorable<Query> for Signal<Query> {
+    fn restore(&self) -> Result<Query, rkyv::rancor::Error> {
+        rkyv::from_bytes(self.bytes())
+    }
+}
+
+impl Restorable<Response> for Signal<Response> {
+    fn restore(&self) -> Result<Response, rkyv::rancor::Error> {
+        rkyv::from_bytes(self.bytes())
     }
 }
