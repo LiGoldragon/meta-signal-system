@@ -1,5 +1,18 @@
 # Upgrades
 
+## 4.1.0 — repin to the 0.33 cohort
+
+- Pins: signal-persona 0f2b3e7 (5.1.0, candidate branch protos033-923d14-signal-persona,
+  pending main), signal 7afb68b (10.3.0), datom-codec eabead4 (0.33.0), protos 3c7ade3
+  (0.33.0), and build-dependency ethos-zero 5a5daca (19.2.0). One revision of each in the lock.
+- Rust API only: `src/generated/signal.rs` is regenerated with ethos-zero 19.2.0, so the seven
+  type aliases WirePath, SocketMode, SystemSocketPath, SystemSocketMode, SupervisionSocketPath,
+  SupervisionSocketMode and ConfigurationGeneration are tuple structs. A consumer wraps a value
+  with the constructor and reads it as `.0`. A test compares the archived bytes of a sample of
+  them with those of the wrapped types; it is a sample, not a proof for every type.
+- `ReaderBudget` fields are private: build one with `ReaderBudget::try_from(n).unwrap()`.
+- The contract holds no `Decimal`.
+
 ## 4.0.0 — repin to the current producer front, adopt the exchange layer
 
 Repinned to `protos` 0.31.0 (rev `1febca7836bf8d5f5973a302fdd50aa9c84c159b`),
